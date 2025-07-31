@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>카메라 권한 테스트</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            text-align: center; 
+            padding: 20px; 
+            background: #f0f0f0;
+        }
+        video { 
+            width: 400px; 
+            border: 2px solid #333; 
+            margin: 20px;
+            transform: scaleX(-1);
+        }
+        button { 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            background: #ff6b6b; 
+            color: white; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer;
+            margin: 10px;
+        }
+        .status { 
+            font-size: 18px; 
+            margin: 20px; 
+            padding: 15px; 
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>📷 비비드뷰티하우스 카메라 테스트</h1>
+    <div id="status" class="status info">카메라 권한을 테스트합니다.</div>
+    <video id="video" autoplay muted playsinline style="display: none;"></video>
+    <button onclick="testCamera()">카메라 권한 테스트</button>
+    <button onclick="openPermissions()">권한 설정 열기</button>
+
+    <div style="margin-top: 30px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <h3>📋 문제 해결 체크리스트:</h3>
+        <ol>
+            <li><strong>브라우저 권한:</strong> 주소창 왼쪽 자물쇠 클릭 → 카메라 허용</li>
+            <li><strong>다른 앱 종료:</strong> Zoom, Skype, Teams 등 카메라 사용 앱 종료</li>
+            <li><strong>웹캠 연결:</strong> USB 웹캠이 제대로 연결되어 있는지 확인</li>
+            <li><strong>브라우저 재시작:</strong> Chrome 완전 종료 후 다시 시작</li>
+            <li><strong>Chrome 업데이트:</strong> 최신 버전인지 확인</li>
+        </ol>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const status = document.getElementById('status');
+
+        async function testCamera() {
+            try {
+                status.textContent = '🔄 카메라 권한을 요청하고 있습니다...';
+                status.className = 'status info';
+                
+                // 카메라 권한 요청
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+                
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                status.textContent = '✅ 카메라가 정상적으로 작동합니다! 이제 메인 게임을 사용할 수 있어요.';
+                status.className = 'status success';
+                
+                console.log('카메라 성공:', stream.getVideoTracks()[0].getSettings());
+                
+            } catch (error) {
+                console.error('카메라 오류:', error);
+                
+                let message = '❌ 카메라 오류: ';
+                
+                switch(error.name) {
+                    case 'NotAllowedError':
+                        message += '권한이 거부되었습니다. 브라우저에서 카메라를 허용해주세요.';
+                        break;
+                    case 'NotFoundError':
+                        message += '카메라를 찾을 수 없습니다. 웹캠이 연결되어 있는지 확인해주세요.';
+                        break;
+                    case 'NotReadableError':
+                        message += '카메라가 다른 앱에서 사용 중입니다. 다른 앱을 종료해주세요.';
+                        break;
+                    case 'OverconstrainedError':
+                        message += '카메라 설정에 문제가 있습니다.';
+                        break;
+                    case 'SecurityError':
+                        message += '보안 오류입니다. HTTPS 연결이 필요할 수 있습니다.';
+                        break;
+                    default:
+                        message += error.message;
+                }
+                
+                status.textContent = message;
+                status.className = 'status error';
+                video.style.display = 'none';
+            }
+        }
+
+        function openPermissions() {
+            // Chrome 권한 설정 페이지 열기
+            window.open('chrome://settings/content/camera', '_blank');
+        }
+
+        // 페이지 로드 시 자동 테스트
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                status.textContent = '📷 "카메라 권한 테스트" 버튼을 클릭하세요.';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
